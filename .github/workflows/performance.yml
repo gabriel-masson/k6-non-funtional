@@ -1,0 +1,188 @@
+# ============================================================================
+# TEORIA: CI/CD PARA TESTES NÃO FUNCIONAIS (PERFORMANCE AS CODE)
+# ============================================================================
+#
+# O que é Performance as Code?
+# ----------------------------
+# É a prática de tratar testes de performance como parte integrante do
+# pipeline de CI/CD, da mesma forma que tratamos testes unitários e de
+# integração. Em vez de rodar testes de performance "de vez em quando"
+# manualmente, eles passam a rodar automaticamente a cada mudança no código.
+#
+# Por que integrar testes de performance no CI/CD?
+# ------------------------------------------------
+# 1. DETECÇÃO PRECOCE: Regressões de performance são identificadas no PR,
+#    não depois que o código já está em produção afetando usuários reais.
+# 2. CULTURA: A equipe passa a pensar em performance desde o início, não
+#    como uma "atividade extra" feita às pressas antes do go-live.
+# 3. HISTÓRICO: Cada execução gera métricas que podem ser comparadas ao
+#    longo do tempo, criando um baseline evolutivo.
+# 4. GATES DE QUALIDADE: Deploys são bloqueados automaticamente se os
+#    thresholds (SLAs/SLOs) não forem atingidos.
+# 5. ECONOMIA: Corrigir um bug de performance em produção custa 10x-100x
+#    mais do que corrigir durante o desenvolvimento.
+#
+# Conceitos aplicados neste workflow:
+# 1. Triggers: Roda em push na main e em pull requests.
+# 2. Modo --quick: Executa apenas Load e Spike (rápido, ideal para PRs).
+# 3. Artifacts: Os relatórios JSON são salvos para análise posterior.
+# 4. Fail-fast: Se um teste falhar, o workflow falha e bloqueia o merge.
+# 5. Cache: Otimiza execuções futuras (quando aplicável).
+# 6. Timeouts: Evita que workflows fiquem rodando eternamente.
+#
+# Fluxo do pipeline:
+# ┌─────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌─────────┐
+# │  Push   │ -> │ Checkout │ -> │ Setup k6 │ -> │ Run Test │ -> │ Report  │
+# │   PR    │    │   Code   │    │          │    │  --quick │    │ Artifact│
+# └─────────┘    └──────────┘    └──────────┘    └──────────┘    └─────────┘
+#                                                                       │
+#                                                                       ▼
+#                                                              ┌─────────────┐
+#                                                              │ Passou? Sim │ -> Merge OK
+#                                                              │      Não    │ -> Bloqueia
+#                                                              └─────────────┘
+# ============================================================================
+
+name: Performance Tests (k6)
+
+# Triggers: quando o workflow deve rodar
+on:
+  # Roda em cada push na branch main
+  push:
+    branches: [main, master]
+  
+  # Roda em cada pull request (para validar antes do merge)
+  pull_request:
+    branches: [main, master]
+  
+  # Permite execução manual via interface do GitHub
+  workflow_dispatch:
+
+# Permissões necessárias
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+# Variáveis de ambiente globais
+env:
+  K6_VERSION: 'v0.50.0'  # Fixa a versão do k6 para reprodutibilidade
+
+jobs:
+  # ========================================================================
+  # JOB 1: Testes de Performance
+  # ========================================================================
+  performance-tests:
+    name: 🚀 Performance Tests
+    runs-on: ubuntu-latest
+    
+    # Timeout de segurança: se o teste travar, cancela após 15 minutos
+    timeout-minutes: 15
+    
+    steps:
+      # ------------------------------------------------------------------
+      # Passo 1: Checkout do código
+      # ------------------------------------------------------------------
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1  # Otimização: não precisamos do histórico completo
+
+      # ------------------------------------------------------------------
+      # Passo 2: Instalação do k6
+      # ------------------------------------------------------------------
+      - name: 📦 Install k6
+        run: |
+          # Baixa a versão específica do k6 (reprodutibilidade)
+          wget -q https://github.com/grafana/k6/releases/download/${K6_VERSION}/k6-${K6_VERSION}-linux-amd64.tar.gz
+          
+          # Extrai e instala
+          tar -xzf k6-${K6_VERSION}-linux-amd64.tar.gz
+          sudo mv k6-${K6_VERSION}-linux-amd64/k6 /usr/local/bin/
+          
+          # Verifica instalação
+          k6 version
+        shell: bash
+
+      # ------------------------------------------------------------------
+      # Passo 3: Validação dos scripts (syntax check)
+      # ------------------------------------------------------------------
+      - name: 🔍 Validate k6 scripts
+        run: |
+          echo "Validando sintaxe dos scripts..."
+          for test_file in tests/*.js; do
+            echo "  ✓ Validando $test_file"
+            k6 inspect "$test_file" > /dev/null
+          done
+          echo "✅ Todos os scripts são válidos"
+        shell: bash
+
+      # ------------------------------------------------------------------
+      # Passo 4: Execução dos testes de performance (modo --quick)
+      # ------------------------------------------------------------------
+      - name: 🏃 Run Performance Tests (Quick Mode)
+        run: |
+          echo "Executando suite de testes no modo --quick..."
+          echo "Isso executará apenas: Load Test e Spike Test"
+          echo ""
+          
+          # Dá permissão de execução ao script
+          chmod +x scripts/run-all.sh
+          
+          # Executa a suite no modo rápido
+          ./scripts/run-all.sh --quick
+        shell: bash
+        env:
+          # Variáveis de ambiente que podem ser usadas nos scripts
+          K6_NO_USAGE_REPORT: 'true'  # Desabilita telemetria do k6
+          BASE_URL: 'https://test-api.k6.io'  # URL da API alvo
+
+      # ------------------------------------------------------------------
+      # Passo 5: Upload dos relatórios como artifacts
+      # ------------------------------------------------------------------
+      - name: 📊 Upload test reports
+        if: always()  # Roda mesmo se os testes falharem
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-performance-reports-${{ github.run_number }}
+          path: |
+            reports/*.json
+            reports/*.html
+          retention-days: 30  # Mantém os relatórios por 30 dias
+          if-no-files-found: warn  # Avisa se não encontrar arquivos, mas não falha
+
+      # ------------------------------------------------------------------
+      # Passo 6: Resumo da execução (opcional, para melhor visualização)
+      # ------------------------------------------------------------------
+      - name: 📋 Generate execution summary
+        if: always()
+        run: |
+          echo "## 🚀 Performance Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Run number:** #${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Relatórios" >> $GITHUB_STEP_SUMMARY
+          echo "Os relatórios completos estão disponíveis nos **Artifacts** desta execução." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 💡 Próximos passos" >> $GITHUB_STEP_SUMMARY
+          echo "- Se os testes passaram: pode fazer merge com confiança!" >> $GITHUB_STEP_SUMMARY
+          echo "- Se falharam: consulte os relatórios para identificar os gargalos." >> $GITHUB_STEP_SUMMARY
+        shell: bash
+
+  # ========================================================================
+  # JOB 2: Notificação (opcional — descomente se quiser notificações)
+  # ========================================================================
+  # notify-on-failure:
+  #   name: 📧 Notify on Failure
+  #   needs: performance-tests
+  #   if: failure()
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Send notification
+  #       run: |
+  #         echo "❌ Performance tests failed!"
+  #         echo "Check the workflow run for details."
+  #         # Aqui você pode integrar com Slack, Teams, email, etc.
