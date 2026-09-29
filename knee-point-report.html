@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Knee Point Report</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:900px;margin:24px auto;padding:0 16px;color:#111827}
+  table{border-collapse:collapse;width:100%;margin-top:16px}
+  th,td{border:1px solid #e5e7eb;padding:6px 10px;text-align:right}
+  th{background:#f3f4f6} tr.knee{background:#dcfce7} tr.break{background:#fee2e2}
+  .box{background:#f9fafb;border-left:4px solid #2563eb;padding:10px 14px;margin:12px 0}
+</style></head><body>
+<h1>Relatório de Breakpoint Test</h1>
+<div class="box">O <b>knee point</b> foi em <b>205 req/s</b>: a partir daí a latência cresce de forma acelerada. Esta é a capacidade <i>prática</i> recomendada.<br>O <b>breakpoint</b> (p95 &gt; 1000ms ou erros &gt; 5%) ocorreu em <b>305 req/s</b>.</div>
+
+<svg viewBox="0 0 820 460" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
+  <rect width="820" height="460" fill="#ffffff"/>
+  <text x="410" y="22" text-anchor="middle" font-size="16" font-weight="bold" fill="#111827">Carga x Latência p95 (Knee Point)</text>
+  <line x1="70" x2="750" y1="400" y2="400" stroke="#e5e7eb"/><text x="62" y="404" text-anchor="end" font-size="11" fill="#374151">0</text><text x="758" y="404" font-size="11" fill="#dc2626">0%</text><line x1="70" x2="750" y1="328" y2="328" stroke="#e5e7eb"/><text x="62" y="332" text-anchor="end" font-size="11" fill="#374151">321</text><text x="758" y="332" font-size="11" fill="#dc2626">20%</text><line x1="70" x2="750" y1="256" y2="256" stroke="#e5e7eb"/><text x="62" y="260" text-anchor="end" font-size="11" fill="#374151">643</text><text x="758" y="260" font-size="11" fill="#dc2626">40%</text><line x1="70" x2="750" y1="183.99999999999997" y2="183.99999999999997" stroke="#e5e7eb"/><text x="62" y="187.99999999999997" text-anchor="end" font-size="11" fill="#374151">964</text><text x="758" y="187.99999999999997" font-size="11" fill="#dc2626">60%</text><line x1="70" x2="750" y1="112" y2="112" stroke="#e5e7eb"/><text x="62" y="116" text-anchor="end" font-size="11" fill="#374151">1286</text><text x="758" y="116" font-size="11" fill="#dc2626">80%</text><line x1="70" x2="750" y1="40" y2="40" stroke="#e5e7eb"/><text x="62" y="44" text-anchor="end" font-size="11" fill="#374151">1607</text><text x="758" y="44" font-size="11" fill="#dc2626">100%</text><text x="70" y="418" text-anchor="middle" font-size="11" fill="#374151">5</text><text x="145.55555555555554" y="418" text-anchor="middle" font-size="11" fill="#374151">105</text><text x="221.11111111111111" y="418" text-anchor="middle" font-size="11" fill="#374151">205</text><text x="296.66666666666663" y="418" text-anchor="middle" font-size="11" fill="#374151">305</text><text x="372.22222222222223" y="418" text-anchor="middle" font-size="11" fill="#374151">405</text><text x="447.77777777777777" y="418" text-anchor="middle" font-size="11" fill="#374151">505</text><text x="523.3333333333333" y="418" text-anchor="middle" font-size="11" fill="#374151">605</text><text x="598.8888888888889" y="418" text-anchor="middle" font-size="11" fill="#374151">705</text><text x="674.4444444444445" y="418" text-anchor="middle" font-size="11" fill="#374151">805</text><text x="750" y="418" text-anchor="middle" font-size="11" fill="#374151">905</text>
+  <path d="M70.0,369.9 L145.6,365.6 L221.1,368.8 L296.7,171.5 L372.2,92.6 L447.8,87.0 L523.3,98.8 L598.9,106.9 L674.4,121.8 L750.0,102.0" fill="none" stroke="#2563eb" stroke-width="3"/>
+  <path d="M70.0,400.0 L145.6,400.0 L221.1,400.0 L296.7,399.8 L372.2,399.2 L447.8,399.3 L523.3,399.5 L598.9,399.3 L674.4,399.6 L750.0,399.5" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4 3"/>
+  <circle cx="70" cy="369.9103804129981" r="4" fill="#2563eb"/><circle cx="145.55555555555554" cy="365.58709473227884" r="4" fill="#2563eb"/><circle cx="221.11111111111111" cy="368.7506523736009" r="4" fill="#2563eb"/><circle cx="296.66666666666663" cy="171.54203175945972" r="4" fill="#2563eb"/><circle cx="372.22222222222223" cy="92.64064557854061" r="4" fill="#2563eb"/><circle cx="447.77777777777777" cy="86.95652173913038" r="4" fill="#2563eb"/><circle cx="523.3333333333333" cy="98.78720653952473" r="4" fill="#2563eb"/><circle cx="598.8888888888889" cy="106.91534325612855" r="4" fill="#2563eb"/><circle cx="674.4444444444445" cy="121.76922674202302" r="4" fill="#2563eb"/><circle cx="750" cy="101.95996455801304" r="4" fill="#2563eb"/>
+  
+      <line x1="221.11111111111111" x2="221.11111111111111" y1="40" y2="400" stroke="#16a34a" stroke-width="2" stroke-dasharray="6 4"/>
+      <circle cx="221.11111111111111" cy="368.7506523736009" r="8" fill="none" stroke="#16a34a" stroke-width="3"/>
+      <text x="229.11111111111111" y="54" font-size="12" font-weight="bold" fill="#16a34a">KNEE POINT: 205 req/s</text>
+  
+      <line x1="296.66666666666663" x2="296.66666666666663" y1="40" y2="400" stroke="#dc2626" stroke-width="2" stroke-dasharray="2 4"/>
+      <text x="288.66666666666663" y="70" text-anchor="end" font-size="12" font-weight="bold" fill="#dc2626">BREAKPOINT: 305 req/s</text>
+  <text x="410" y="445" text-anchor="middle" font-size="12" fill="#374151">Carga aplicada (req/s)</text>
+  <text transform="translate(18 220) rotate(-90)" text-anchor="middle" font-size="12" fill="#2563eb">Latência p95 (ms)</text>
+  <text transform="translate(808 220) rotate(90)" text-anchor="middle" font-size="12" fill="#dc2626">Taxa de erro (%)</text>
+</svg>
+<table>
+  <tr><th>Degrau</th><th>Alvo (req/s)</th><th>Entregue (req/s)</th><th>p50 (ms)</th><th>p95 (ms)</th><th>Erros</th></tr>
+  <tr class="">
+        <td>1</td><td>5</td><td>10.1</td>
+        <td>117</td><td>134</td><td>0.0%</td></tr><tr class="">
+        <td>2</td><td>105</td><td>208.2</td>
+        <td>118</td><td>154</td><td>0.0%</td></tr><tr class="knee">
+        <td>3</td><td>205</td><td>408.3</td>
+        <td>105</td><td>139</td><td>0.0%</td></tr><tr class="break">
+        <td>4</td><td>305</td><td>577.2</td>
+        <td>129</td><td>1020</td><td>0.0%</td></tr><tr class="">
+        <td>5</td><td>405</td><td>626.2</td>
+        <td>226</td><td>1372</td><td>0.2%</td></tr><tr class="">
+        <td>6</td><td>505</td><td>702.4</td>
+        <td>212</td><td>1397</td><td>0.2%</td></tr><tr class="">
+        <td>7</td><td>605</td><td>732.1</td>
+        <td>216</td><td>1345</td><td>0.1%</td></tr><tr class="">
+        <td>8</td><td>705</td><td>766.5</td>
+        <td>206</td><td>1308</td><td>0.2%</td></tr><tr class="">
+        <td>9</td><td>805</td><td>828.4</td>
+        <td>203</td><td>1242</td><td>0.1%</td></tr><tr class="">
+        <td>10</td><td>905</td><td>751.8</td>
+        <td>217</td><td>1330</td><td>0.1%</td></tr>
+</table>
+<h3>Como interpretar</h3>
+<ul>
+  <li><b>Antes do knee:</b> latência estável; o sistema tem folga.</li>
+  <li><b>No knee:</b> o sistema começa a saturar (filas, CPU, pool de conexões...).</li>
+  <li><b>Depois do knee:</b> pequenas variações de carga causam grandes aumentos de latência.</li>
+  <li><b>"Entregue" &lt; "Alvo":</b> o k6 não conseguiu enviar a taxa pedida (sinal de saturação do servidor ou do gerador de carga).</li>
+</ul>
+</body></html>
